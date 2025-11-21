@@ -10,7 +10,7 @@ export class UsersService {
 
   async create(email: string, password: string, name: string) {
     const exists = await this.userModel.findOne({ email });
-    if (exists) throw new ConflictException('Email já cadastrado');
+    if (exists) throw new ConflictException('Email already in use');
 
     const hashed = await bcrypt.hash(password, 10);
     const user = new this.userModel({ email, password: hashed, name, role: email.includes('admin') ? 'admin' : 'user' });
