@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { CitiesModule } from './cities/cities.module';
 
 
 @Module({
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
+    CitiesModule,
   ],
 })
 export class AppModule {}
