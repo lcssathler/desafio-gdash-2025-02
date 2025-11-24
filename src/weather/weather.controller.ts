@@ -26,4 +26,10 @@ export class WeatherController {
     const logs = await this.weatherService.getLogsByCity(Number(cityId));
     return { cityId, total: logs.length, data: logs };
   }
+
+  @Post('selected-cities')
+  async setSelectedCities(@Body() body: { cityIds: number[] }) {
+    global.selectedCityIds = body.cityIds
+    return { message: 'Cidades atualizadas com sucesso', count: body.cityIds.length }
+  }
 }
