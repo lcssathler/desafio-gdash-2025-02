@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await axios.post('http://localhost:3000/auth/login', { email, password })
       localStorage.setItem('token', res.data.access_token)
       setUser({ email })
-      window.location.href = '/dashboard'
+      window.location.href = '/home'
     } catch (err) {
       alert('Login inválido')
     } finally {
