@@ -11,7 +11,6 @@ export class CitiesService {
       return this.statesCache;
     }
 
-    console.log('Buscando estados do IBGE...');
     const response = await axios.get(
       'https://servicodados.ibge.gov.br/api/v1/localidades/estados'
     );
