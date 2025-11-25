@@ -1,8 +1,10 @@
 import requests
 import time
+import pika
+import json
 from typing import List, Dict
 
-SELECTED_CITIES_URL = "http://localhost:3000/weather/selected-cities"
+SELECTED_CITIES_URL = "http://backend:3000/weather/selected-cities"
 IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 
@@ -62,29 +64,31 @@ def get_weather(lat: float, lon: float) -> Dict:
     except:
         return None
 
-def send_queue(payload: Dict):
-    try:
-        requests.post("http://localhost:3000/weather/log", json=payload, timeout=10)
-        print(f"Sent city {payload['cityName']} with {payload['temperature']}°C to queue")
-    except Exception as e:
-        print(f"Error sending {payload.get('cityName', '?')}: {e}")
+try:
+    credentials = pika.PlainCredentials("guest", "guest")
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host="rabbitmq", port=15672, heartbeat=600, credentials=credentials)
+    )
+    channel = connection.channel()
+    channel.queue_declare(queue='weather_queue', durable=True)
+    print("Collector connected to RabbitMQ")
+except Exception as e:
+    print(f"Error collector connecting to RabbitMQ: {e}")
+    exit(1)
 
 while True:
     city_ids = get_selected_cities()
-    print(f"Selected cities: {city_ids}")
     
     if not city_ids:
         print("No selected cities found")
         time.sleep(60)
         continue
-
-    print(f"Start collection weather")
     
     for city_id in city_ids:
         city_info = get_city_info(city_id)
         print(f"Collecting data for city {city_info}")
         if not city_info:
-            print(f"Can't find coordinates for city {city_id}")
+            print(f"Can't find info for city {city_id}")
             continue
             
         weather = get_weather(city_info["latitude"], city_info["longitude"])
@@ -98,7 +102,14 @@ while True:
                 **weather,
                 "source": "open-meteo"
             }
-            send_queue(payload)
+
+            channel.basic_publish(
+                exchange='',
+                routing_key='weather_queue',
+                body=json.dumps(payload).encode(),
+                properties=pika.BasicProperties(delivery_mode=2)
+            )
+            print(f"Weather from city {city_info['cityName']} was sent to queue")
         else:
             print(f"Error get weather from {city_info['name']}")
         

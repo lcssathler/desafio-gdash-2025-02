@@ -26,14 +26,6 @@ interface Insight {
   type: 'warning' | 'info' | 'success'
 }
 
-const cityNames: Record<number, string> = {
-  3550308: 'São Paulo',
-  3469058: 'Belo Horizonte',
-  3451328: 'Porto Alegre',
-  3471870: 'Salvador',
-  3118607: 'Recife'
-}
-
 export default function Dashboard() {
   const { logout } = useAuth()
   const [logs, setLogs] = useState<CityData[]>([])
