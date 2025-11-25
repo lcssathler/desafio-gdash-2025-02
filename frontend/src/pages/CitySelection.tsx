@@ -61,7 +61,7 @@ export default function CitySelection() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Monitoramento das Cidades Selecionadas</h1>
+          <h1 className="text-3xl font-bold">Weather forecast of selected cities</h1>
         </div>
       </header>
 
@@ -100,7 +100,7 @@ export default function CitySelection() {
                     </div>
                   </div>
                   <Button variant="secondary" className="w-full">
-                    Ver detalhes completos
+                    View all details
                   </Button>
                 </CardContent>
               </Card>

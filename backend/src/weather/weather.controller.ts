@@ -27,9 +27,14 @@ export class WeatherController {
     return { cityId, total: logs.length, data: logs };
   }
 
+  @Get('selected-cities')
+  getSelectedCities() {
+    return { citiesId: global.selectedCityIds || [] }
+  }
+
   @Post('selected-cities')
-  async setSelectedCities(@Body() body: { cityIds: number[] }) {
-    global.selectedCityIds = body.cityIds
-    return { message: 'Cidades atualizadas com sucesso', count: body.cityIds.length }
+  async setSelectedCities(@Body() body: { citiesId: number[] }) {
+    global.selectedCityIds = body.citiesId
+    return { message: 'Cities updated', count: body.citiesId.length }
   }
 }

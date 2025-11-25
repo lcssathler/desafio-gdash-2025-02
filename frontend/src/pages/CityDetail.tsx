@@ -35,10 +35,10 @@ export default function CityDetail() {
             cityName: data[0].cityName,
             logs: data.slice(0, 10)
           })
-          setInsight(aiRes.data.insight || "Condições climáticas estáveis e favoráveis para geração solar.")
+          setInsight(aiRes.data.insight || "Stable and favorable weather conditions for solar power generation..")
         }
       } catch (err) {
-        setInsight("Não foi possível gerar o insight no momento.")
+        setInsight("Error generating insight")
       } finally {
         setLoading(false)
       }
@@ -58,7 +58,7 @@ export default function CityDetail() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold">{cityName} - Detalhes Climáticos</h1>
+          <h1 className="text-2xl font-bold">{cityName} - Climate details</h1>
         </div>
       </header>
 
@@ -70,7 +70,7 @@ export default function CityDetail() {
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-3">
                 <Sun className="w-8 h-8 text-yellow-500" />
-                Análise Completa com Inteligência Artificial
+                AI generated Insight
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -83,7 +83,7 @@ export default function CityDetail() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Histórico de Temperatura (últimas 50 coletas)</CardTitle>
+            <CardTitle>Temperature history (last 50 datas)</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>

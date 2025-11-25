@@ -24,9 +24,19 @@ export default function Home() {
     )
   }
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedCities.length > 0) {
       localStorage.setItem('selectedCities', JSON.stringify(selectedCities))
+      
+      await fetch('http://localhost:3000/weather/selected-cities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ citiesId: selectedCities })
+      })
+
       navigate('/cities')
     }
   }
@@ -38,20 +48,20 @@ export default function Home() {
           <div className="flex justify-center mb-4">
             <Sun className="w-16 h-16 text-yellow-500" />
           </div>
-          <CardTitle className="text-3xl">GDASH Monitoramento Solar</CardTitle>
-          <p className="text-muted-foreground mt-2">Selecione o estado e as cidades que deseja monitorar</p>
+          <CardTitle className="text-3xl">Weather Forecast</CardTitle>
+          <p className="text-muted-foreground mt-2">Select cities to view its weather</p>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div>
-              <Label htmlFor="state">Estado</Label>
+              <Label htmlFor="state">State</Label>
               <Select value={selectedState} onValueChange={setSelectedState}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um estado" />
                 </SelectTrigger>
                 <SelectContent>
                   {loading ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">Carregando estados...</div>
+                    <div className="p-4 text-center text-sm text-muted-foreground">Loading states...</div>
                   ) : (
                     states.map(state => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
@@ -63,7 +73,7 @@ export default function Home() {
 
             {selectedState && (
               <div>
-                <Label>Cidades selecionadas: {selectedCities.length}</Label>
+                <Label>Selected cities: {selectedCities.length}</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3 max-h-96 overflow-y-auto p-4 border rounded-lg">
                   {cities.map(city => (
                     <div key={city.id} className="flex items-center space-x-2">
@@ -89,7 +99,7 @@ export default function Home() {
             disabled={selectedCities.length === 0}
           >
             <MapPin className="w-5 h-5 mr-2" />
-            Continuar para o Dashboard ({selectedCities.length} cidades)
+            Go to dashboard ({selectedCities.length} cities)
           </Button>
         </CardContent>
       </Card>

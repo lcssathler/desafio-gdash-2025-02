@@ -3,27 +3,41 @@ import time
 from typing import List, Dict
 
 SELECTED_CITIES_URL = "http://localhost:3000/weather/selected-cities"
+IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
+IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 
 def get_selected_cities() -> List[int]:
     try:
         response = requests.get(SELECTED_CITIES_URL)
         if response.status_code == 200:
             data = response.json()
-            return data.get("cityIds", [])
+            return data.get("citiesId", [])
     except:
         pass
     return []
 
-def get_city_coordinates(city_id: int) -> Dict:
-    url = f"https://servicodados.ibge.gov.br/api/v1/localidades/municipios/{city_id}"
+def get_city_info(city_id: int):
     try:
-        data = requests.get(url).json()
-        lat = data['latitude']
-        lon = data['longitude']
-        name = data['nome']
-        state = data['microrregiao']['mesorregiao']['UF']['sigla']
-        return {"lat": lat, "lon": lon, "name": name, "state": state, "cityId": city_id}
-    except:
+        r1 = requests.get(f"{IBGE_MUN_URL}/{city_id}")
+        data = r1.json()
+        name = data["nome"]
+        state = data["microrregiao"]["mesorregiao"]["UF"]["sigla"]
+
+        r2 = requests.get(f"{IBGE_MALHA_URL}/{city_id}/metadados")
+        malha = r2.json()
+        centroide = malha[0]["centroide"]
+        lat = centroide["latitude"]
+        lon = centroide["longitude"]
+
+        return {
+            "cityId": city_id,
+            "cityName": name,
+            "state": state,
+            "latitude": float(lat),
+            "longitude": float(lon)
+        }
+    except Exception as e:
+        print(f"Error get info of city {city_id}: {e}")
         return None
 
 def get_weather(lat: float, lon: float) -> Dict:
@@ -57,6 +71,7 @@ def send_queue(payload: Dict):
 
 while True:
     city_ids = get_selected_cities()
+    print(f"Selected cities: {city_ids}")
     
     if not city_ids:
         print("No selected cities found")
@@ -66,20 +81,21 @@ while True:
     print(f"Start collection weather")
     
     for city_id in city_ids:
-        city_info = get_city_coordinates(city_id)
+        city_info = get_city_info(city_id)
+        print(f"Collecting data for city {city_info}")
         if not city_info:
             print(f"Can't find coordinates for city {city_id}")
             continue
             
-        clima = get_weather(city_info["lat"], city_info["lon"])
-        if clima:
+        weather = get_weather(city_info["latitude"], city_info["longitude"])
+        if weather:
             payload = {
                 "cityId": city_id,
-                "cityName": city_info["name"],
+                "cityName": city_info["cityName"],
                 "state": city_info["state"],
-                "latitude": city_info["lat"],
-                "longitude": city_info["lon"],
-                **clima,
+                "latitude": city_info["latitude"],
+                "longitude": city_info["longitude"],
+                **weather,
                 "source": "open-meteo"
             }
             send_queue(payload)
