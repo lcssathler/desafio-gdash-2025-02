@@ -3,8 +3,14 @@ import time
 import pika
 import json
 from typing import List, Dict
+from threading import Thread
+import uvicorn
+from fastapi import FastAPI
+
+app = FastAPI()
 
 SELECTED_CITIES_URL = "http://backend:3000/weather/selected-cities"
+ALL_LOGS_URL = "http://backend:3000/weather/logs?limit=1000"
 IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 
@@ -42,16 +48,45 @@ def get_city_info(city_id: int):
         print(f"Error get info of city {city_id}: {e}")
         return None
 
-def get_weather(lat: float, lon: float) -> Dict:
+def collect_cities(city_ids: list[int], reason: str):
+    print(f"\n[{reason}] Coletando {len(city_ids)} cidade(s)")
+    for city_id in city_ids:
+        city = get_city_info(city_id)
+        if not city: continue
+        weather = get_weather_and_forecast(city["latitude"], city["longitude"])
+        if not weather: continue
+
+        payload = {**city, **weather, "source": "open-meteo", "trigger": reason}
+        channel.basic_publish(
+            exchange='',
+            routing_key='weather_queue',
+            body=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+            properties=pika.BasicProperties(delivery_mode=2)
+        )
+        print(f"SENT: {city['cityName']}: {weather['temperature']}°C")
+
+def get_weather_and_forecast(lat: float, lon: float) -> Dict:
     url = f"https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
         "longitude": lon,
+        "daily": ["temperature_2m_mean", "temperature_2m_max", "temperature_2m_min"],
         "current": ["temperature_2m", "apparent_temperature", "precipitation", "weather_code", "cloud_cover", "wind_speed_10m"],
         "timezone": "America/Sao_Paulo"
     }
     try:
         data = requests.get(url, params=params).json()
+
+        forecast_7d = []
+        qt = len(data["daily"]["time"])
+
+        for i in range(qt):
+            date = data["daily"]["time"][i]
+            temp_mean = data["daily"]["temperature_2m_mean"][i]
+            temp_max = data["daily"]["temperature_2m_max"][i]
+            temp_min = data["daily"]["temperature_2m_min"][i]
+            forecast_7d.append({date: [temp_mean, temp_max, temp_min]})
+
         current = data["current"]
         return {
             "temperature": current["temperature_2m"],
@@ -60,14 +95,30 @@ def get_weather(lat: float, lon: float) -> Dict:
             "weatherCode": current.get("weather_code"),
             "cloudCover": current.get("cloud_cover"),
             "windSpeed": current.get("wind_speed_10m"),
+            "forecast7d": forecast_7d
         }
     except:
-        return None
+        print(f"Error fetching weather data: {e}")
+        return {}
+
+def get_cities_with_existing_data() -> list[int]:
+    try:
+        r = requests.get(ALL_LOGS_URL, timeout=15)
+        if r.status_code == 200:
+            logs = r.json().get("data", [])
+            city_ids = {log["cityId"] for log in logs if "cityId" in log}
+            return list(city_ids)
+        return []
+    except Exception as e:
+        print(f"[ERRO] Cant get logs: {e}")
+        return []
+
+global channel
 
 try:
     credentials = pika.PlainCredentials("guest", "guest")
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="rabbitmq", port=15672, heartbeat=600, credentials=credentials)
+        pika.ConnectionParameters(host="rabbitmq", port=5672, heartbeat=600, credentials=credentials)
     )
     channel = connection.channel()
     channel.queue_declare(queue='weather_queue', durable=True)
@@ -76,43 +127,62 @@ except Exception as e:
     print(f"Error collector connecting to RabbitMQ: {e}")
     exit(1)
 
-while True:
-    city_ids = get_selected_cities()
-    
-    if not city_ids:
-        print("No selected cities found")
-        time.sleep(60)
-        continue
-    
-    for city_id in city_ids:
-        city_info = get_city_info(city_id)
-        print(f"Collecting data for city {city_info}")
-        if not city_info:
-            print(f"Can't find info for city {city_id}")
-            continue
-            
-        weather = get_weather(city_info["latitude"], city_info["longitude"])
-        if weather:
-            payload = {
-                "cityId": city_id,
-                "cityName": city_info["cityName"],
-                "state": city_info["state"],
-                "latitude": city_info["latitude"],
-                "longitude": city_info["longitude"],
-                **weather,
-                "source": "open-meteo"
-            }
+trigger_collection = False
 
-            channel.basic_publish(
-                exchange='',
-                routing_key='weather_queue',
-                body=json.dumps(payload).encode(),
-                properties=pika.BasicProperties(delivery_mode=2)
-            )
-            print(f"Weather from city {city_info['cityName']} was sent to queue")
+def collect_all_cities():
+    global trigger_collection
+    trigger_collection = False
+    print("Trigger started")
+    
+    city_ids = get_selected_cities()
+    if not city_ids:
+        print("None selected cities to collect")
+        return
+
+    for city_id in city_ids:
+        city = get_city_info(city_id)
+        if not city:
+            continue
+        weather = get_weather_and_forecast(city["latitude"], city["longitude"])
+        if not weather:
+            continue
+
+        payload = {**city, **weather, "source": "open-meteo", "triggered": True}
+        channel.basic_publish(
+            exchange='',
+            routing_key='weather_queue',
+            body=json.dumps(payload).encode('utf-8'),
+            properties=pika.BasicProperties(delivery_mode=2)
+        )
+        print(f"ENVIADO → {city['cityName']}: {weather['temperature']}°C")
+
+@app.post("/trigger")
+async def trigger_immediate():
+    city_ids = get_selected_cities()
+    if not city_ids:
+        return {"status": "empty"}
+
+    collect_cities(city_ids, reason="nova-selecao")
+    return {"status": "success", "collected": len(city_ids)}
+
+def periodic_update():
+    while True:
+        cities_to_update = get_cities_with_existing_data()
+        if cities_to_update:
+            print(f"\n[SCHEDULED UPDATING] Updating {len(cities_to_update)} cities")
+            collect_cities(cities_to_update, reason="atualizacao-horaria")
         else:
-            print(f"Error get weather from {city_info['name']}")
+            print("\n[WAITING] None city selected. Waiting for it")
         
-        time.sleep(1) 
-    print(f"Collector concluded successfully")
-    time.sleep(3600) 
+        time.sleep(3600)
+
+if __name__ == "__main__":
+    print("Collector STARTED")
+    
+    Thread(target=uvicorn.run, args=(app,), kwargs={"host": "0.0.0.0", "port": 8000}, daemon=True).start()
+    Thread(target=periodic_update, daemon=True).start()
+
+    try:
+        while True: time.sleep(1)
+    except KeyboardInterrupt:
+        connection.close()

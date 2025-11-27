@@ -34,7 +34,14 @@ export class WeatherController {
 
   @Post('selected-cities')
   async setSelectedCities(@Body() body: { citiesId: number[] }) {
-    global.selectedCityIds = body.citiesId
-    return { message: 'Cities updated', count: body.citiesId.length }
+    global.selectedCityIds = body.citiesId || []
+
+    try {
+      await fetch('http://collector:8000/trigger', { method: 'POST' })
+    } catch (err) {
+      console.log('Error trigger:', err)
+    }
+
+    return { message: 'Cities updated and collector started', count: body.citiesId.length }
   }
 }

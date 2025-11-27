@@ -20,42 +20,39 @@ export default function CitySelection() {
   const [cities, setCities] = useState<CityWeather[]>([])
   const [loading, setLoading] = useState(true)
 
-  const selectedCityIds = JSON.parse(localStorage.getItem('selectedCities') || '[]')
 
   useEffect(() => {
-    const fetchLatest = async () => {
+    const selectedCityIds = JSON.parse(localStorage.getItem("selectedCities") || "[]");
+
+    const fetchAllData = async () => {
+      if (selectedCityIds.length === 0) return;
       try {
-        const res = await api.get('/weather/logs?limit=100')
-        const logs = res.data.data
+        setLoading(true);
 
-        const latestByCity = logs.reduce((acc: any, log: any) => {
-          if (selectedCityIds.includes(log.cityId)) {
-            if (!acc[log.cityId] || new Date(log.createdAt) > new Date(acc[log.cityId].createdAt)) {
-              acc[log.cityId] = log
-            }
+        const res = await api.get("/weather/logs?limit=10000");
+        const allLogs = res.data.data;
+        console.log("All logs:", allLogs);
+
+        const latestByCity = allLogs.reduce((acc: any, log: any) => {
+          if (!acc[log.cityId] || new Date(log.createdAt) > new Date(acc[log.cityId].createdAt)) {
+            acc[log.cityId] = log;
           }
-          return acc
-        }, {})
+          return acc;
+        }, {});
 
-        setCities(Object.values(latestByCity))
+        setCities(Object.values(latestByCity));
       } catch (err) {
-        console.error(err)
+        console.error("Error loading cities log:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    if (selectedCityIds.length > 0) {
-      fetchLatest()
-      const interval = setInterval(fetchLatest, 30000)
-      return () => clearInterval(interval)
-    }
-  }, [])
+    fetchAllData();
+    const interval = setInterval(fetchAllData, 30000);
+    return () => clearInterval(interval);
+  }, []); 
 
-  if (selectedCityIds.length === 0) {
-    navigate('/home')
-    return null
-  }
 
   return (
     <div className="min-h-screen bg-background">

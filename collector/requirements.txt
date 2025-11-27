@@ -1,2 +1,4 @@
 requests
 pika
+fastapi
+uvicorn
