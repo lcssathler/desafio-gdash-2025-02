@@ -42,7 +42,6 @@ export class WeatherService {
   }
 
   async generateGrokInsights(cityId: string): Promise<string> {
-    // 1. Busca os últimos 7+ logs da cidade + forecast
     const logs: WeatherLog[] = await this.weatherLogModel
       .find({ cityId: Number(cityId) })
       .sort({ createdAt: -1 })
@@ -56,17 +55,14 @@ export class WeatherService {
     const latestLog = logs[0];
     const cityName = latestLog.cityName;
 
-    // Histórico recente (últimos 7 dias)
     const historico7dias = logs.map(log => ({
       data: new Date(log.time).toLocaleDateString('pt-BR'),
       temp: log.temperature,
       precipitation: log.precipitation || 0
     }));
 
-    // Previsão 7 dias
     const previsao7dias = latestLog.forecast7d || [];
 
-    // Prompt mantido exatamente como o original
     const prompt = `
 Você é um meteorologista experiente do Brasil, especialista em análise climática para energia solar.
 
@@ -97,7 +93,6 @@ Fale como se estivesse conversando com um amigo engenheiro solar, em inglês flu
 `;
 
     try {
-      // Utilizando o SDK oficial do Groq
       const chatCompletion = await this.groq.chat.completions.create({
         messages: [
           { 
@@ -109,13 +104,11 @@ Fale como se estivesse conversando com um amigo engenheiro solar, em inglês flu
             content: prompt 
           }
         ],
-        // Certifique-se que o modelo no .env é compatível com Groq (ex: llama3-8b-8192 ou mixtral-8x7b-32768)
         model: this.configService.get<string>('GROQ_MODEL') || 'llama-3.1-8b-instant',
         temperature: 0.7,
         max_tokens: 300,
       });
 
-      // Retorna o conteúdo da primeira escolha ou uma string vazia se falhar
       return chatCompletion.choices[0]?.message?.content?.trim() || "No content generated.";
 
     } catch (error: any) {
