@@ -18,6 +18,7 @@ export class WeatherController {
   @Get('logs')
   async getAllLogs(@Query('limit') limit = 50) {
     const logs = await this.weatherService.getAllLogs(Number(limit));
+    console.log('Retrieved logs: ', logs);
     return { total: logs.length, data: logs };
   }
 
@@ -43,5 +44,11 @@ export class WeatherController {
     }
 
     return { message: 'Cities updated and collector started', count: body.citiesId.length }
+  }
+
+  @Get('insights/grok/:cityId')
+  async getGrokInsights(@Param('cityId') cityId: string) {
+    const insight = await this.weatherService.generateGrokInsights(cityId);
+    return { insight };
   }
 }

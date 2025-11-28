@@ -13,6 +13,7 @@ interface CityWeather {
   precipitation?: number
   windSpeed?: number
   cloudCover?: number
+  forecast7d?: {}
 }
 
 export default function CitySelection() {

@@ -1,5 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+
+@Schema({ _id: false })
+export class ForecastItem {
+  @Prop({ required: true })
+  date: string; 
+
+  @Prop({ required: true })
+  tempMean: number;
+
+  @Prop({ required: true })
+  tempMax: number;
+
+  @Prop({ required: true })
+  tempMin: number;
+
+  @Prop({required: true})
+  precipitationProbMean: number;
+}
 
 @Schema({ timestamps: true })
 export class WeatherLog extends Document {
@@ -11,6 +29,9 @@ export class WeatherLog extends Document {
 
   @Prop({ required: true })
   state: string;
+
+  @Prop({ required: true })
+  time: string;
 
   @Prop({ required: true })
   latitude: number;
@@ -41,6 +62,9 @@ export class WeatherLog extends Document {
 
   @Prop({ default: 'open-meteo' })
   source: string;
+
+  @Prop({ type: [ForecastItem], required: true })
+  forecast7d: ForecastItem[];;
 }
 
 export const WeatherLogSchema = SchemaFactory.createForClass(WeatherLog);

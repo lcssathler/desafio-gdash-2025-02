@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { ArrowLeft, Sun, CloudRain } from 'lucide-react'
+import { ArrowLeft, Sun } from 'lucide-react'
 
 interface Log {
   temperature: number
@@ -24,19 +24,9 @@ export default function CityDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get(`/weather/logs/city/${cityId}`)
-        const data = res.data.data
-        if (data.length > 0) {
-          setCityName(data[0].cityName)
-          setLogs(data.slice(0, 50))
-
-          const aiRes = await api.post('/ai/insights', {
-            cityId: Number(cityId),
-            cityName: data[0].cityName,
-            logs: data.slice(0, 10)
-          })
+          const aiRes = await api.get(`/weather/insights/grok/${cityId}`)
           setInsight(aiRes.data.insight || "Stable and favorable weather conditions for solar power generation..")
-        }
+        
       } catch (err) {
         setInsight("Error generating insight")
       } finally {

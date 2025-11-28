@@ -3,9 +3,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { WeatherService } from './weather.service';
 import { WeatherController } from './weather.controller';
 import { WeatherLog, WeatherLogSchema } from './schemas/weather-log.schema';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forFeature([
       { name: WeatherLog.name, schema: WeatherLogSchema },
     ]),

@@ -13,6 +13,7 @@ SELECTED_CITIES_URL = "http://backend:3000/weather/selected-cities"
 ALL_LOGS_URL = "http://backend:3000/weather/logs?limit=1000"
 IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
+OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
 def get_selected_cities() -> List[int]:
     try:
@@ -25,14 +26,17 @@ def get_selected_cities() -> List[int]:
     return []
 
 def get_city_info(city_id: int):
+    print(f"Getting info of city {city_id}")
     try:
         r1 = requests.get(f"{IBGE_MUN_URL}/{city_id}")
         data = r1.json()
+        print(f"Fetched city data: {data}")
         name = data["nome"]
         state = data["microrregiao"]["mesorregiao"]["UF"]["sigla"]
 
         r2 = requests.get(f"{IBGE_MALHA_URL}/{city_id}/metadados")
         malha = r2.json()
+        print(f"Fetched malha data: {malha}")
         centroide = malha[0]["centroide"]
         lat = centroide["latitude"]
         lon = centroide["longitude"]
@@ -44,12 +48,13 @@ def get_city_info(city_id: int):
             "latitude": float(lat),
             "longitude": float(lon)
         }
+    
     except Exception as e:
         print(f"Error get info of city {city_id}: {e}")
         return None
 
-def collect_cities(city_ids: list[int], reason: str):
-    print(f"\n[{reason}] Coletando {len(city_ids)} cidade(s)")
+def collect_cities(city_ids: List[int], reason: str):
+    print(f"\n[{reason}] Coletando {city_ids} cidade(s)")
     for city_id in city_ids:
         city = get_city_info(city_id)
         if not city: continue
@@ -66,17 +71,17 @@ def collect_cities(city_ids: list[int], reason: str):
         print(f"SENT: {city['cityName']}: {weather['temperature']}°C")
 
 def get_weather_and_forecast(lat: float, lon: float) -> Dict:
-    url = f"https://api.open-meteo.com/v1/forecast"
+    print(f"Getting weather for lat={lat}, lon={lon}")
     params = {
         "latitude": lat,
         "longitude": lon,
-        "daily": ["temperature_2m_mean", "temperature_2m_max", "temperature_2m_min"],
+        "daily": ["temperature_2m_mean", "temperature_2m_max", "temperature_2m_min", "precipitation_probability_mean"],
         "current": ["temperature_2m", "apparent_temperature", "precipitation", "weather_code", "cloud_cover", "wind_speed_10m"],
         "timezone": "America/Sao_Paulo"
     }
-    try:
-        data = requests.get(url, params=params).json()
 
+    try:
+        data = requests.get(OPEN_METEO_URL, params=params).json()
         forecast_7d = []
         qt = len(data["daily"]["time"])
 
@@ -85,7 +90,8 @@ def get_weather_and_forecast(lat: float, lon: float) -> Dict:
             temp_mean = data["daily"]["temperature_2m_mean"][i]
             temp_max = data["daily"]["temperature_2m_max"][i]
             temp_min = data["daily"]["temperature_2m_min"][i]
-            forecast_7d.append({date: [temp_mean, temp_max, temp_min]})
+            precipitation_prob_mean = data["daily"]["precipitation_probability_mean"][i]
+            forecast_7d.append({"date": date, "tempMean": temp_mean, "tempMax": temp_max, "tempMin": temp_min, "precipitationProbMean": precipitation_prob_mean})
 
         current = data["current"]
         return {
@@ -95,9 +101,10 @@ def get_weather_and_forecast(lat: float, lon: float) -> Dict:
             "weatherCode": current.get("weather_code"),
             "cloudCover": current.get("cloud_cover"),
             "windSpeed": current.get("wind_speed_10m"),
+            "time": current.get("time"),
             "forecast7d": forecast_7d
-        }
-    except:
+        }   
+    except Exception as e:
         print(f"Error fetching weather data: {e}")
         return {}
 
@@ -154,11 +161,12 @@ def collect_all_cities():
             body=json.dumps(payload).encode('utf-8'),
             properties=pika.BasicProperties(delivery_mode=2)
         )
-        print(f"ENVIADO → {city['cityName']}: {weather['temperature']}°C")
+        print(f"SENT → {city['cityName']}: {weather['temperature']}°C")
 
 @app.post("/trigger")
 async def trigger_immediate():
     city_ids = get_selected_cities()
+    print(f"Trigger immediate collection for {city_ids} cities")
     if not city_ids:
         return {"status": "empty"}
 

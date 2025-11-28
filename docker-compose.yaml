@@ -1,90 +1,3 @@
-# services:
-#   mongo:
-#     image: mongo:7
-#     container_name: weather-mongo
-#     restart: unless-stopped
-#     ports:
-#       - "27017:27017"
-#     volumes:
-#       - mongo-data:/data/db
-#     healthcheck:
-#       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-#       interval: 10s
-#       timeout: 10s
-#       retries: 5
-#     networks:
-#       - weather-net
-
-#   rabbitmq:
-#     image: rabbitmq:3-management
-#     container_name: weather-rabbitmq
-#     restart: unless-stopped
-#     ports:
-#       - "5672:5672"   
-#       - "15672:15672"  
-#     environment:
-#       - RABBITMQ_DEFAULT_USER=guest
-#       - RABBITMQ_DEFAULT_PASS=guest
-#     healthcheck:
-#       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-#       interval: 10s
-#       timeout: 10s
-#       retries: 5
-#     networks:
-#       - weather-net
-
-#   backend:
-#     build: ./backend
-#     container_name: weather-backend
-#     restart: unless-stopped
-#     ports:
-#       - "3000:3000"
-#     environment:
-#       - MONGODB_URI=mongodb://mongo:27017/gdash
-#       - JWT_SECRET=${JWT_SECRET}
-#       - GROQ_API_KEY=${GROQ_API_KEY}
-#       - FRONTEND_URL=http://localhost:5173
-#     depends_on:
-#       mongo:
-#         condition: service_healthy
-#       rabbitmq:
-#         condition: service_started
-#     volumes:
-#       - ./backend:/app
-#       - /app/node_modules
-#     networks:
-#       - weather-net
-    
-#   go-worker:
-#     build: ./worker
-#     container_name: weather-go-worker
-#     restart: unless-stopped
-#     depends_on:
-#       rabbitmq:
-#         condition: service_healthy
-#     networks:
-#       - weather-net
-#     environment:
-#       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-
-#   collector:
-#     container_name: weather-collector
-#     build: ./collector
-#     depends_on:
-#       rabbitmq:
-#         condition: service_healthy
-#       backend:
-#         condition: service_started
-#     restart: unless-stopped
-#     networks:
-#       - weather-net
-
-# volumes:
-#   mongo-data:
-
-# networks:
-#   weather-net:
-
 services:
   mongo:
     image: mongo:7
@@ -146,17 +59,19 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 5s
+      retries: 10
+      start_period: 45s
 
   go-worker:
     build: ./worker
     container_name: weather-go-worker
-    restart: unless-stopped
+    restart: on-failure
     environment:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - weather-net
@@ -166,7 +81,7 @@ services:
     container_name: weather-collector
     ports:
       - "8000:8000"
-    restart: unless-stopped
+    restart: on-failure
     depends_on:
       rabbitmq:
         condition: service_healthy
