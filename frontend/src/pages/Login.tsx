@@ -4,9 +4,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { Sun, CloudRain, Zap } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
   const { login, isLoading } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -53,6 +55,17 @@ export default function Login() {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
+
+          <div className="mt-4 flex gap-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate('/register')}
+            >
+              Create account
+            </Button>
+          </div>
+
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <CloudRain className="inline-block w-4 h-4 mr-1" />
             Data collected from various cities in Brazil
