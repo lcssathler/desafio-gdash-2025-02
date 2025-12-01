@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Thermometer, Droplets, Wind, Sun } from 'lucide-react'
+import Header from '@/components/Header'
 import type { CityWeather } from '@/components/interfaces/CityWeather'
 
 
@@ -74,12 +75,7 @@ export default function CitySelection() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Weather Forecast of Selected Cities</h1>
-        </div>
-      </header>
-
+      <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (

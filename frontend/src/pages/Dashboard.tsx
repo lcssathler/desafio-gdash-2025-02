@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useAuth } from '@/contexts/AuthContext'
+import Header from '@/components/Header'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Cloud, CloudRain, Sun, Thermometer, Wind, Download, LogOut } from 'lucide-react'
 
@@ -27,7 +27,6 @@ interface Insight {
 }
 
 export default function Dashboard() {
-  const { logout } = useAuth()
   const [logs, setLogs] = useState<CityData[]>([])
   const [insights, setInsights] = useState<Insight[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,18 +103,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Sun className="w-8 h-8 text-yellow-500" />
-            Weather Forecast
-          </h1>
-          <Button variant="outline" onClick={logout}>
-            <LogOut className="w-4 h-4 mr-2" /> Sair
-          </Button>
-        </div>
-      </header>
-
+      <Header />
       <main className="container mx-auto px-4 py-8">
         {insights.length > 0 && (
           <div className="mb-8 space-y-3">

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import Home from './pages/Home'
 import CitySelection from './pages/CitySelection'
 import CityDetail from './pages/CityDetail'
@@ -13,6 +14,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/home" element={<Home />} />
           <Route path="/cities" element={<CitySelection />} />
           <Route path="/city/:cityId" element={<CityDetail />} />

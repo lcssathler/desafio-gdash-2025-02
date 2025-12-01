@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Sun, CloudRain, Wind, Thermometer } from 'lucide-react'
+import Header from '@/components/Header'
 import ForecastChart from '@/components/ForecastChart'
 
 interface Log {
@@ -62,6 +63,7 @@ export default function CityDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
+      <Header />
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
