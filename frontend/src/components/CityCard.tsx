@@ -23,7 +23,7 @@ export function CityCard({ city }: CityCardProps) {
     `/weather/insights/grok/${city.cityId}`,
     fetcher,
     { 
-      refreshInterval: 600000, // 10 minutos
+      refreshInterval: 600000,
       revalidateOnFocus: false
     }
   );

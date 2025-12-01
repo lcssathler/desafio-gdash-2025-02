@@ -5,21 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Thermometer, Droplets, Wind, Sun } from 'lucide-react'
+import type { CityWeather } from '@/components/interfaces/CityWeather'
 
-interface CityWeather {
-  cityId: number
-  cityName: string
-  temperature: number
-  precipitation?: number
-  windSpeed?: number
-  cloudCover?: number
-  forecast7d?: {}
-}
 
 export default function CitySelection() {
   const navigate = useNavigate()
   const [cities, setCities] = useState<CityWeather[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true) 
 
 
   useEffect(() => {
@@ -41,7 +33,32 @@ export default function CitySelection() {
           return acc;
         }, {});
 
-        setCities(Object.values(latestByCity));
+        setCities(
+          Object.values(latestByCity).map((log: any) => {
+            const parsed: CityWeather = {
+              cityId: log.cityId,
+              cityName: log.cityName,
+              temperature: log.temperature,
+              precipitation: log.precipitation,
+              windSpeed: log.windSpeed,
+              cloudCover: log.cloudCover,
+              apparentTemperature: log.apparentTemperature ?? log.temperature,
+              createdAt: log.createdAt,
+              forecast7d: log.forecast7d ?? [],
+              latitude: log.latitude,
+              longitude: log.longitude,
+              source: log.source ?? "unknown",
+              state: log.state ?? "",
+              time: log.time ?? log.createdAt,
+              updatedAt: log.updatedAt ?? log.createdAt,
+              weatherCode: log.weatherCode ?? 0,
+              __v: log.__v,
+              _id: log._id
+            };
+            return parsed;
+          })
+        )
+        console.log("Cites weather: ", cities)
       } catch (err) {
         console.error("Error loading cities log:", err);
       } finally {
@@ -59,7 +76,7 @@ export default function CitySelection() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Weather forecast of selected cities</h1>
+          <h1 className="text-3xl font-bold">Weather Forecast of Selected Cities</h1>
         </div>
       </header>
 
