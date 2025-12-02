@@ -15,6 +15,8 @@ IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
+global channel
+
 def get_selected_cities() -> List[int]:
     try:
         response = requests.get(SELECTED_CITIES_URL)
@@ -54,7 +56,7 @@ def get_city_info(city_id: int):
         return None
 
 def collect_cities(city_ids: List[int], reason: str):
-    print(f"\n[{reason}] Coletando {city_ids} cidade(s)")
+    print(f"\n[{reason}] Collecting {city_ids} cities")
     for city_id in city_ids:
         city = get_city_info(city_id)
         if not city: continue
@@ -120,7 +122,7 @@ def get_cities_with_existing_data() -> list[int]:
         print(f"[ERRO] Cant get logs: {e}")
         return []
 
-global channel
+
 
 try:
     credentials = pika.PlainCredentials("guest", "guest")
