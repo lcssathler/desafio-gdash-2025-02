@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Download, List } from 'lucide-react'
+import { Download } from 'lucide-react'
 import type { CityWeather } from '@/components/interfaces/CityWeather'
 
 interface Props {

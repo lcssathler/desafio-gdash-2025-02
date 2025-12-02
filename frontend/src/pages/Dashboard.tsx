@@ -4,10 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import Header from '@/components/Header'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Cloud, CloudRain, Sun, Thermometer, Wind, Download, LogOut } from 'lucide-react'
+import { Cloud, CloudRain, Sun, Download } from 'lucide-react'
 
 interface CityData {
   cityId: number
