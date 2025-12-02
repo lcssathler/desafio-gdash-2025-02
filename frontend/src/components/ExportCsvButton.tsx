@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
+import { Download, List } from 'lucide-react'
 import type { CityWeather } from '@/components/interfaces/CityWeather'
 
 interface Props {
@@ -8,8 +8,8 @@ interface Props {
 
 export default function ExportCsvButton({ cities }: Props) {
   const handleExport = () => {
-    const headers = ['City', 'Temperature', 'Data']
-    const rows = cities.map(c => [c.cityName, c.temperature.toString(), new Date(c.createdAt).toLocaleString()])
+    const headers = ['City', 'State', 'Temperature', 'Data', '7-Day Forecast', 'Latitude', 'Longitude']
+    const rows = cities.map(c => [c.cityName, c.state , c.temperature.toString(), new Date(c.createdAt).toLocaleString(), JSON.stringify(c.forecast7d), c.latitude.toString(), c.longitude.toString()])
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
