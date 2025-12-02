@@ -22,8 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await axios.post('http://localhost:3000/auth/login', { email, password })
       localStorage.setItem('token', res.data.access_token)
       setUser({ email })
-      toast.success('Login realizado com sucesso!', {
-        description: `Bem-vindo, ${email}`,
+      toast.success('Login successfully!', {
+        description: `Welcome, ${email}`,
         duration: 3000,
         position: 'top-right',
       })
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = '/login'
       }, 500)
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Erro ao criar conta'
+      const errorMessage = err.response?.data?.message || 'error create account'
       toast.error('Erro ao registrar', {
         description: errorMessage,
         duration: 3000,
@@ -71,8 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token')
     setUser(null)
-    toast.success('Logout realizado', {
-      description: 'Até logo!',
+    toast.success('Logout concluded', {
+      description: 'See ya!',
       duration: 2000,
       position: 'top-right',
     })

@@ -31,24 +31,24 @@ export default function Register() {
     e.preventDefault()
     
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Todos os campos são obrigatórios')
+      setError('Fields required')
       return
     }
 
     if (formData.password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres')
+      setError('Password must be at least 6 characters')
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('As senhas não correspondem')
+      setError('Passords do not match')
       return
     }
 
     try {
       await register(formData.name, formData.email, formData.password)
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar conta')
+      setError(err.response?.data?.message || 'Error creating account')
     }
   }
 

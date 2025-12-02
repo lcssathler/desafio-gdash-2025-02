@@ -6,7 +6,7 @@ import Home from './pages/Home'
 import CitySelection from './pages/CitySelection'
 import CityDetail from './pages/CityDetail'
 import { AuthProvider } from './contexts/AuthContext'
-import Dashboard from './pages/Dashboard'
+
 
 function App() {
   return (
@@ -19,7 +19,6 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/cities" element={<CitySelection />} />
           <Route path="/city/:cityId" element={<CityDetail />} />
-          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
         <Toaster />
       </AuthProvider>
