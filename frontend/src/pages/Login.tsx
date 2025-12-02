@@ -39,6 +39,7 @@ export default function Login() {
                 type="email"
                 defaultValue="admin@example.com"
                 required
+                className='border-black border-2'
               />
             </div>
             <div className="space-y-2">
@@ -49,6 +50,7 @@ export default function Login() {
                 type="password"
                 defaultValue="123456"
                 required
+                className='border-black border-2'
               />
             </div>
             <Button className="w-full" type="submit" disabled={isLoading}>
@@ -59,7 +61,7 @@ export default function Login() {
           <div className="mt-4 flex gap-2">
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full hover:border-2"
               onClick={() => navigate('/register')}
             >
               Create account

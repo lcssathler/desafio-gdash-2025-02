@@ -99,7 +99,7 @@ export default function CitySelection() {
             cities.map(city => (
               <Card
                 key={city.cityId}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="cursor-pointer hover:shadow-lg transition-shadow hover:transform hover:-translate-y-1"
                 onClick={() => navigate(`/city/${city.cityId}`)}
               >
                 <CardHeader>
@@ -122,6 +122,9 @@ export default function CitySelection() {
                   </div>
                   <Button variant="secondary" className="w-full">
                     View all details
+                  </Button>
+                  <Button variant="destructive" className="w-full">
+                    Delete city
                   </Button>
                 </CardContent>
               </Card>

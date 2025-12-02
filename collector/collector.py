@@ -133,7 +133,7 @@ try:
     channel.queue_declare(queue='weather_queue', durable=True)
     print("Collector connected to RabbitMQ")
 except Exception as e:
-    print(f"Error collector connecting to RabbitMQ: {e}")
+    print(e)
     exit(1)
 
 trigger_collection = False
