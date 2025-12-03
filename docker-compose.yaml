@@ -35,7 +35,9 @@ services:
       - weather-net
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
     container_name: weather-backend
     restart: unless-stopped
     ports:
