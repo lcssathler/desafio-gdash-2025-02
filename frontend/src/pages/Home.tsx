@@ -31,6 +31,7 @@ export default function Home() {
   const [loadingStates, setLoadingStates] = useState<boolean>(false)
   const [loadingCities, setLoadingCities] = useState<boolean>(false)
   const [searchCity, setSearchCity] = useState<string>('')
+  const VITE_API_URL = import.meta.env.VITE_API_URL
 
   const handleCityToggle = (cityId: number) => {
     setSelectedCities(prev =>
@@ -45,7 +46,7 @@ export default function Home() {
     if (ids.length > 0) {
       localStorage.setItem('selectedCities', JSON.stringify(ids))
 
-      await fetch('http://localhost:3000/weather/selected-cities', {
+      await fetch(`${VITE_API_URL}/weather/selected-cities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
