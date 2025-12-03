@@ -9,7 +9,7 @@ async function bootstrap() {
   const usersService = app.get(UsersService);
 
   app.enableCors({
-    origin: configService.get('FRONTEND_URL'),
+    origin: [configService.get('FRONTEND_URL'), "http://localhost:5173"],
     credentials: true,
   });
 
@@ -26,7 +26,9 @@ async function bootstrap() {
     }
   }
 
-  await app.listen(3000);
-  console.log('API running on http://localhost:3000');
+  const port = configService.get<number>('PORT') || 3000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}`);
 }
+
 bootstrap();
