@@ -33,7 +33,7 @@ export function useCities() {
         setStates(stateSiglas)
         setCities(citiesData)
       } catch (err) {
-        console.error('Erro ao carregar dados do IBGE:', err)
+        console.error('Error loading IBGE data:', err)
       } finally {
         setLoading(false)
       }

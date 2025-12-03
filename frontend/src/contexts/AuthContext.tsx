@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
-import axios from 'axios'
+import api from '@/lib/api'
 import { toast } from 'sonner'
 
 interface AuthContextType {
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      const res = await axios.post('http://localhost:3000/auth/login', { email, password })
+      const res = await api.post('/auth/login', { email, password })
       localStorage.setItem('token', res.data.access_token)
       setUser({ email })
       toast.success('Login successfully!', {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true)
     try {
-      const res = await axios.post('http://localhost:3000/users/register', { name, email, password })
+      const res = await api.post('/users/register', { name, email, password })
       localStorage.setItem('token', res.data.access_token)
       setUser({ name, email })
       toast.success('User created successfully!', {

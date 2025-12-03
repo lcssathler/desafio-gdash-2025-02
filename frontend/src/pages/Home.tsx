@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import axios from 'axios'
+import api from '@/lib/api'
 import { Sun, MapPin } from 'lucide-react'
 
 type State = {
@@ -61,7 +61,7 @@ export default function Home() {
   const fetchStates = async () => {
     setLoadingStates(true)
     try {
-      const res = await axios.get('http://localhost:3000/cities/states')
+      const res = await api.get('/cities/states')
       const data: State[] = res.data || []
       setStates(data)
       if (!selectedState && data.length > 0) setSelectedState(data[0].sigla)
@@ -73,7 +73,7 @@ export default function Home() {
   const fetchCitiesByState = async (uf: string) => {
     setLoadingCities(true)
     try {
-      const res = await axios.get(`http://localhost:3000/cities/state/${uf}`)
+      const res = await api.get(`/cities/state/${uf}`)
       const data: City[] = res.data || []
       setCities(data)
       setFilteredCities(data)

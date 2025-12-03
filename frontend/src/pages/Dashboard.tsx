@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -33,9 +33,9 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('token')
-      const res = await axios.get('http://localhost:3000/weather/logs?limit=50', {
+      const res = await api.get('/weather/logs?limit=50', {
         headers: { Authorization: `Bearer ${token}` }
-      })
+      });
       setLogs(res.data.data)
       generateInsights(res.data.data)
     } catch (err) {
@@ -61,7 +61,7 @@ export default function Dashboard() {
     })
 
     try {
-      const res = await axios.post('http://localhost:3000/ai/insights', { cities: latest })
+      const res = await api.post('/ai/insights', { cities: latest })
       if (res.data.insights) {
         res.data.insights.forEach((i: string) => newInsights.push({ text: i, type: 'success' }))
       }
