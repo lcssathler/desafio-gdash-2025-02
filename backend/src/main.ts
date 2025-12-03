@@ -8,10 +8,24 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const usersService = app.get(UsersService);
 
+  const allowedOrigins = [
+    configService.get('FRONTEND_URL'),
+    "http://localhost:5173",
+    "https://weather-forecast-nu-pink.vercel.app",
+    "https://weather-forecast-nu-pink.vercel.app/",
+    "https://weather-forecast-mbjbvdtqa-lcssathlers-projects.vercel.app",
+  ];
+
   app.enableCors({
-    origin: [configService.get('FRONTEND_URL'), "http://localhost:5173"],
+    origin: (origin: any, callback: (arg0: Error | null, arg1: boolean | undefined) => void) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`), false);
+      }
+    },
     credentials: true,
-  });
+  });;
 
   try {
     await usersService.create(
