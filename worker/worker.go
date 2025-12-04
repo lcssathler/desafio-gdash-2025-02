@@ -4,11 +4,26 @@ import (
     "bytes"
     "log"
     "net/http"
+    "os"
+
     "github.com/streadway/amqp"
 )
 
 func main() {
-    conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+    rabbitURL := os.Getenv("RABBITMQ_URL")
+    if rabbitURL == "" {
+        rabbitURL = "amqp://guest:guest@rabbitmq:5672/"
+    }
+
+    backendURL := os.Getenv("BACKEND_URL")
+    if backendURL == "" {
+        backendURL = "http://backend:3000"
+    }
+
+    log.Printf("Connecting to RabbitMQ: %s", rabbitURL)
+    log.Printf("Sending logs to backend: %s", backendURL)
+
+    conn, err := amqp.Dial(rabbitURL)
     failOnError(err, "Error connecting to RabbitMQ")
     defer conn.Close()
 
@@ -18,29 +33,41 @@ func main() {
 
     q, err := ch.QueueDeclare(
         "weather_queue",
-        true,
-        false,
+        true, 
+        false, 
         false,
         false,
         nil,
     )
     failOnError(err, "Error declaring queue")
 
-    msgs, err := ch.Consume(q.Name,"",false, false, false, false, nil)
-    failOnError(err, "Error register consumer")
+    msgs, err := ch.Consume(
+        q.Name,
+        "",
+        false,
+        false,
+        false,
+        false,
+        nil,
+    )
+    failOnError(err, "Error registering consumer")
 
-    log.Println("Worker running")
+    log.Println("Worker is running and waiting for messages...")
 
-    
     for msg := range msgs {
         log.Printf("Received: %s", msg.Body)
 
-        resp, err := http.Post("http://backend:3000/weather/log",
+        resp, err := http.Post(
+            backendURL+"/weather/log",
             "application/json",
             bytes.NewBuffer(msg.Body),
         )
 
         if err != nil || (resp != nil && resp.StatusCode >= 400) {
+            if resp != nil {
+                log.Printf("Send error: status %d", resp.StatusCode)
+                resp.Body.Close()
+            }
             log.Printf("Send error: %v", err)
             msg.Nack(false, true)
             continue
