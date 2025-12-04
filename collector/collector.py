@@ -10,8 +10,10 @@ import os
 
 app = FastAPI()
 
-SELECTED_CITIES_URL = "http://backend:3000/weather/selected-cities"
-ALL_LOGS_URL = "http://backend:3000/weather/logs?limit=1000"
+BACKEND_URL= os.getenv("BACKEND_URL")
+
+SELECTED_CITIES_URL = f"{BACKEND_URL}/weather/selected-cities"
+ALL_LOGS_URL = f"{BACKEND_URL}/weather/logs?limit=1000"
 IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
