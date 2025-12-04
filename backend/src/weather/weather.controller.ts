@@ -1,9 +1,10 @@
 import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
 import { WeatherService } from './weather.service';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('weather')
 export class WeatherController {
-  constructor(private readonly weatherService: WeatherService) {}
+  constructor(private readonly weatherService: WeatherService, private configService: ConfigService) {}
 
   @Post('log')
   async receiveWeatherLog(@Body() body: any) {
@@ -38,7 +39,7 @@ export class WeatherController {
     global.selectedCityIds = body.citiesId || []
 
     try {
-      await fetch('http://collector:8000/trigger', { method: 'POST' })
+      await fetch(`${this.configService.get<string>('COLLECTOR_URL')}/trigger`, { method: 'POST' })
     } catch (err) {
       console.log('Error trigger:', err)
     }
