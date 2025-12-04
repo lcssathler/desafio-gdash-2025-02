@@ -6,6 +6,7 @@ from typing import List, Dict
 from threading import Thread
 import uvicorn
 from fastapi import FastAPI
+import os
 
 app = FastAPI()
 
@@ -14,6 +15,7 @@ ALL_LOGS_URL = "http://backend:3000/weather/logs?limit=1000"
 IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
+RABBITMQ_URL = os.getenv("RABBITMQ_URL")
 
 global channel
 
@@ -123,26 +125,48 @@ def get_cities_with_existing_data() -> list[int]:
         return []
 
 
-
 try:
-    credentials = pika.PlainCredentials("guest", "guest")
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="rabbitmq", port=5672, heartbeat=600, credentials=credentials)
-    )
+    if RABBITMQ_URL:
+        print(f"Connecting using URL: {RABBITMQ_URL}")
+
+        params = pika.URLParameters(RABBITMQ_URL)
+        params.heartbeat = 600
+        params.blocked_connection_timeout = 300
+
+        connection = pika.BlockingConnection(params)
+
+    else:
+        print("Connecting to local RabbitMQ...")
+
+        # Local Docker
+        credentials = pika.PlainCredentials("guest", "guest")
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(
+                host="rabbitmq", 
+                port=5672,
+                heartbeat=600,
+                credentials=credentials
+            )
+        )
+
     channel = connection.channel()
     channel.queue_declare(queue='weather_queue', durable=True)
-    print("Collector connected to RabbitMQ")
+
+    print("Connected to RabbitMQ")
+
 except Exception as e:
-    print(e)
+    print("RabbitMQ connection error:", e)
     exit(1)
 
+
 trigger_collection = False
+
 
 def collect_all_cities():
     global trigger_collection
     trigger_collection = False
     print("Trigger started")
-    
+
     city_ids = get_selected_cities()
     if not city_ids:
         print("None selected cities to collect")
@@ -152,18 +176,27 @@ def collect_all_cities():
         city = get_city_info(city_id)
         if not city:
             continue
+
         weather = get_weather_and_forecast(city["latitude"], city["longitude"])
         if not weather:
             continue
 
-        payload = {**city, **weather, "source": "open-meteo", "triggered": True}
+        payload = {
+            **city,
+            **weather,
+            "source": "open-meteo",
+            "triggered": True
+        }
+
         channel.basic_publish(
-            exchange='',
-            routing_key='weather_queue',
-            body=json.dumps(payload).encode('utf-8'),
+            exchange="",
+            routing_key="weather_queue",
+            body=json.dumps(payload).encode("utf-8"),
             properties=pika.BasicProperties(delivery_mode=2)
         )
+
         print(f"SENT → {city['cityName']}: {weather['temperature']}°C")
+
 
 @app.post("/trigger")
 async def trigger_immediate():
