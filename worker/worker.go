@@ -11,14 +11,7 @@ import (
 
 func main() {
     rabbitURL := os.Getenv("RABBITMQ_URL")
-    if rabbitURL == "" {
-        rabbitURL = "amqp://guest:guest@rabbitmq:5672/"
-    }
-
     backendURL := os.Getenv("BACKEND_URL")
-    if backendURL == "" {
-        backendURL = "http://backend:3000"
-    }
 
     log.Printf("Connecting to RabbitMQ: %s", rabbitURL)
     log.Printf("Sending logs to backend: %s", backendURL)
