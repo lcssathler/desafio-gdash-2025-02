@@ -46,6 +46,7 @@ func main() {
     failOnError(err, "Error registering consumer")
 
     log.Println("Worker is running and waiting for messages...")
+    log.Printf("Getting connected on %s", backendURL)
 
     for msg := range msgs {
         log.Printf("Received: %s", msg.Body)

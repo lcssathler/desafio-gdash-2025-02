@@ -11,13 +11,14 @@ import os
 app = FastAPI()
 
 BACKEND_URL= os.getenv("BACKEND_URL")
+RABBITMQ_URL = os.getenv("RABBITMQ_URL")
 
 SELECTED_CITIES_URL = f"{BACKEND_URL}/weather/selected-cities"
 ALL_LOGS_URL = f"{BACKEND_URL}/weather/logs?limit=1000"
 IBGE_MUN_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 IBGE_MALHA_URL = "https://servicodados.ibge.gov.br/api/v4/malhas/municipios"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
-RABBITMQ_URL = os.getenv("RABBITMQ_URL")
+
 
 global channel
 
