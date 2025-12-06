@@ -1,12 +1,16 @@
-import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, NotFoundException, Delete } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('weather')
 export class WeatherController {
-  constructor(private readonly weatherService: WeatherService, private configService: ConfigService) {}
+  constructor(private readonly weatherService: WeatherService, private configService: ConfigService) { }
 
-  
+  @Delete('log/delete/:_id')
+  async deleteCity(@Param('_id') _id: string) {
+    console.log("Trying to delete log " + _id)
+    return this.weatherService.deleteCityById(_id)
+  }
 
   @Post('log')
   async receiveWeatherLog(@Body() body: any) {

@@ -117,6 +117,7 @@ def get_weather_and_forecast(lat: float, lon: float) -> Dict:
 
 def get_cities_with_existing_data() -> list[int]:
     try:
+        print(f"Sending logs to {BACKEND_URL}")
         r = requests.get(ALL_LOGS_URL, timeout=15)
         if r.status_code == 200:
             logs = r.json().get("data", [])

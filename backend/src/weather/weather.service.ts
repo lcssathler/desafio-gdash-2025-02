@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
@@ -10,8 +10,7 @@ export class WeatherService {
   private groq: Groq;
 
   constructor(
-    @InjectModel(WeatherLog.name)
-    private weatherLogModel: Model<WeatherLog>,
+    @InjectModel(WeatherLog.name) private weatherLogModel: Model<WeatherLog>,
     private configService: ConfigService,
   ) {
     this.groq = new Groq({
@@ -39,6 +38,16 @@ export class WeatherService {
       .sort({ createdAt: -1 })
       .limit(limit)
       .exec();
+  }
+
+  async deleteCityById(id: string) {
+    const result = await this.weatherLogModel.findByIdAndDelete(id)
+
+    if (!result) {
+      throw new NotFoundException(`City with id ${id} not found`)
+    }
+
+    return { message: 'City deleted successfully' }
   }
 
   async generateGrokInsights(cityId: string): Promise<string> {

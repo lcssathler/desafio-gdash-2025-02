@@ -64,12 +64,25 @@ services:
       retries: 10
       start_period: 180s
 
+  frontend:
+    build: ./frontend
+    container_name: weather-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:3000 
+    depends_on:
+      - backend
+
   go-worker:
     build: ./worker
     container_name: weather-go-worker
     restart: on-failure
     environment:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    env_file:
+      - .env
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -87,6 +100,8 @@ services:
         condition: service_healthy
     networks:
       - weather-net
+    env_file:
+      - .env  
 
 volumes:
   mongo-data:

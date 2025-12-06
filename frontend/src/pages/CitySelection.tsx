@@ -9,71 +9,77 @@ import Header from '@/components/Header'
 import type { CityWeather } from '@/components/interfaces/CityWeather'
 import CityChart from '@/components/CityChart'
 import ExportCsvButton from '@/components/ExportCsvButton'
-
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
 
 export default function CitySelection() {
   const navigate = useNavigate()
   const [cities, setCities] = useState<CityWeather[]>([])
   const [loading, setLoading] = useState(true)
+  const [cityToDelete, setCityToDelete] = useState<string | null>(null)
+
+  const deleteCity = async (_id: string) => {
+    try {
+      await api.delete(`/weather/log/delete/${_id}`)
+      setCities(prev => prev.filter(c => c._id !== _id))
+
+      const saved = JSON.parse(localStorage.getItem("selectedCities") || "[]")
+      const updated = saved.filter((id: string) => id !== _id)
+      localStorage.setItem("selectedCities", JSON.stringify(updated))
+
+      toast.success("City deleted successfully")
+    } catch {
+      toast.error("Error deleting city")
+    }
+  }
 
 
   useEffect(() => {
-    const selectedCityIds = JSON.parse(localStorage.getItem("selectedCities") || "[]");
-
+    const selectedCityIds = JSON.parse(localStorage.getItem("selectedCities") || "[]")
     const fetchAllData = async () => {
-      if (selectedCityIds.length === 0) return;
+      if (selectedCityIds.length === 0) return
       try {
-        setLoading(true);
-
-        const res = await api.get("/weather/logs?limit=10000");
-        const allLogs = res.data.data;
-        console.log("All logs:", allLogs);
-
+        setLoading(true)
+        const res = await api.get("/weather/logs?limit=10000")
+        const allLogs = res.data.data
         const latestByCity = allLogs.reduce((acc: any, log: any) => {
           if (!acc[log.cityId] || new Date(log.createdAt) > new Date(acc[log.cityId].createdAt)) {
-            acc[log.cityId] = log;
+            acc[log.cityId] = log
           }
-          return acc;
-        }, {});
-
+          return acc
+        }, {})
         setCities(
-          Object.values(latestByCity).map((log: any) => {
-            const parsed: CityWeather = {
-              cityId: log.cityId,
-              cityName: log.cityName,
-              temperature: log.temperature,
-              precipitation: log.precipitation,
-              windSpeed: log.windSpeed,
-              cloudCover: log.cloudCover,
-              apparentTemperature: log.apparentTemperature ?? log.temperature,
-              createdAt: log.createdAt,
-              forecast7d: log.forecast7d ?? [],
-              latitude: log.latitude,
-              longitude: log.longitude,
-              source: log.source ?? "unknown",
-              state: log.state ?? "",
-              time: log.time ?? log.createdAt,
-              updatedAt: log.updatedAt ?? log.createdAt,
-              weatherCode: log.weatherCode ?? 0,
-              __v: log.__v,
-              _id: log._id
-            };
-            return parsed;
-          })
+          Object.values(latestByCity).map((log: any) => ({
+            cityId: log.cityId,
+            cityName: log.cityName,
+            temperature: log.temperature,
+            precipitation: log.precipitation,
+            windSpeed: log.windSpeed,
+            cloudCover: log.cloudCover,
+            apparentTemperature: log.apparentTemperature ?? log.temperature,
+            createdAt: log.createdAt,
+            forecast7d: log.forecast7d ?? [],
+            latitude: log.latitude,
+            longitude: log.longitude,
+            source: log.source ?? "unknown",
+            state: log.state ?? "",
+            time: log.time ?? log.createdAt,
+            updatedAt: log.updatedAt ?? log.createdAt,
+            weatherCode: log.weatherCode ?? 0,
+            __v: log.__v,
+            _id: log._id
+          }))
         )
-        console.log("Cites weather: ", cities)
-      } catch (err) {
-        console.error("Error loading cities log:", err);
+      } catch {
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchAllData();
-    const interval = setInterval(fetchAllData, 30000);
-    return () => clearInterval(interval);
-  }, []); 
-
+    fetchAllData()
+    const interval = setInterval(fetchAllData, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -97,37 +103,68 @@ export default function CitySelection() {
             ))
           ) : (
             cities.map(city => (
-              <Card
-                key={city.cityId}
-                className="cursor-pointer hover:shadow-lg transition-shadow hover:transform hover:-translate-y-1"
-                onClick={() => navigate(`/city/${city.cityId}`)}
-              >
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {city.cityName}
-                    {city.temperature > 30 ? <Sun className="text-orange-500" /> : <Thermometer className="text-blue-500" />}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-4xl font-bold">{city.temperature.toFixed(1)}°C</div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Droplets className="w-4 h-4 text-blue-500" />
-                      {(city.precipitation || 0).toFixed(1)} mm
+              <AlertDialog key={city.cityId}>
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-shadow hover:transform hover:-translate-y-1"
+                  onClick={() => navigate(`/city/${city.cityId}`)}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {city.cityName}
+                      {city.temperature > 30 ? <Sun className="text-orange-500" /> : <Thermometer className="text-blue-500" />}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="text-4xl font-bold">{city.temperature.toFixed(1)}°C</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="w-4 h-4 text-blue-500" />
+                        {(city.precipitation || 0).toFixed(1)} mm
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Wind className="w-4 h-4 text-gray-500" />
+                        {(city.windSpeed || 0).toFixed(0)} km/h
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Wind className="w-4 h-4 text-gray-500" />
-                      {(city.windSpeed || 0).toFixed(0)} km/h
-                    </div>
-                  </div>
-                  <Button variant="secondary" className="w-full">
-                    View all details
-                  </Button>
-                  <Button variant="destructive" className="w-full">
-                    Delete city
-                  </Button>
-                </CardContent>
-              </Card>
+
+                    <Button variant="secondary" className="w-full">
+                      View all details
+                    </Button>
+
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCityToDelete(city._id!)
+                        }}
+                      >
+                        Delete city
+                      </Button>
+                    </AlertDialogTrigger>
+                  </CardContent>
+                </Card>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete city?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this city?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        if (cityToDelete) deleteCity(cityToDelete)
+                      }}
+                    >
+                      Confirm delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             ))
           )}
         </div>

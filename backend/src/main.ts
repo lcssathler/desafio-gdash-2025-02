@@ -10,6 +10,7 @@ async function bootstrap() {
 
   const allowedOrigins = [
     configService.get('FRONTEND_URL'),
+    "http://localhost:5174",
     "http://localhost:5173",
     "https://weather-forecast-nu-pink.vercel.app",
     "https://weather-forecast-nu-pink.vercel.app/",
