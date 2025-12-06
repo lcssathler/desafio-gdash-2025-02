@@ -1,8 +1,9 @@
 # Weather Forecast
 
-Monitoramento climático em tempo real focado em geração de energia fotovoltaica, com insights gerados por IA.
+Monitoramento climático de todas as cidades do Brasil, com insights gerados por IA.
 
-## Funcionalidades
+## 🧠 Funcionalidades
+- Cadastro e login de usuário via autenticação JWT
 - Seleção e gerenciamento de cidades brasileiras
 - Dashboard com temperatura, precipitação, vento e cobertura de nuvens
 - Gráficos comparativos e histórico completo
@@ -12,12 +13,12 @@ Monitoramento climático em tempo real focado em geração de energia fotovoltai
 - Atualização automática a cada 30 segundos
 - Deploy Railway + Vercel
 
-# Links
+# 🔗 Links
 -Backend + Collector + RabbitMQ + Worker: [Railway dashboard](https://railway.com/invite/N75xMOgHkkw) ou [Railway project link](https://railway.com/project/0e21c556-75ef-4056-91bd-95baccc9060a?environmentId=5623a887-c069-4b0d-b269-6baa8b2d9404)  
 
 -Frontend: [Domínio do deploy](https://weather-forecast-nu-pink.vercel.app/) 
 
-## Tecnologias
+## 🛠 Tecnologias
 **Frontend**
 - Vite + React 18 + TypeScript
 - Tailwind CSS + shadcn/ui
@@ -33,12 +34,18 @@ Monitoramento climático em tempo real focado em geração de energia fotovoltai
 **Infra**
 - Docker + Docker Compose
 
-## Portas
+**APIs de Paginação**
+- [API de localidade do IBGE](https://servicodados.ibge.gov.br/api/docs/localidades)
+- [API de malha geográfica do IBGE](https://servicodados.ibge.gov.br/api/docs/localidades)
+- [API da Open Meteo](https://open-meteo.com/en/docs)
+
+## 🌐 Portas
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3000`
+- Collector: `http://localhost:8000`
 - MongoDB: `27017`
 
-## Como Executar (Docker – Recomendado)
+## 👾 Como Executar (via Docker)
 ```bash
 git clone <seu-repositorio>
 cd weather-forecast
@@ -49,7 +56,7 @@ cp backend/.env.example backend/.env
 docker compose up --build
 ```
 
-## Variáveis de Ambiente
+## 🔒 Variáveis de Ambiente
 Frontend (frontend/.env)
 ```
 VITE_API_URL=http://localhost:3000
@@ -61,15 +68,20 @@ GROQ_API_KEY=sua-chave-groq-aqui
 COLLECTOR_URL=http://collector:8000
 ```
 
-## Coleta de Dados
-Um collector externo através de um trigger envia logs via POST a cada 5 minutos. Para isso, há duas threads em execução dentro do collector: 
-1. Um endpoint /trigger que escuta o fluxo frontend -> backend para coletar os logs climáticos da cidade.
+## 💻 Coleta de Dados
+Um collector externo através de um trigger envia logs via POST a cada 5 minutos. Sendo o responsável por fazer as requisições para as APIs de clima e geografia, há duas threads em execução dentro do collector: 
+1. Um endpoint /trigger que escuta o fluxo frontend -> backend para coletar as informações da cidade, as condições climáticas e a previsão de tempo para os próximos 7 dias.
 2. Um loop que fica buscando logs atualizados das cidades já selecionadas.
 
-## Worker
+## 👩‍💻 Worker
 O worker é responsável por se inscrever em um canal do RabbitMQ e escutar todas as mensagens que são enviadas para lá. Após receber os logs climáticos das cidades selecionadas, ele faz uma chamada direta ao backend para persistir os dados no MongoDB.
 
-## Estrutura do Projeto
+## ⚙ Groq API
+Com os dados consolidados e salvos no banco de dados, o backend envia todas as informações geográficas e climáticas para um modelo de predição para analisar as as previsões futuras com as condições climáticas atuais e gerar um resumo sobre todo o contexto metererológico.
+
+## 
+
+## 🗂 Estrutura do Projeto
 
 ```plaintext
 weather-forecast/
@@ -119,7 +131,7 @@ weather-forecast/
                 └── weather-log.schema.ts
 ```
 
-## Endpoints da API (Backend)
+## 🌐 Endpoints da API (Backend)
 
 Base URL: `http://localhost:3000`
 
@@ -134,7 +146,7 @@ Base URL: `http://localhost:3000`
 | POST    | `/weather/selected-cities`            | Atualiza cidades selecionadas e dispara collector  | Body: `{ "citiesId": [1, 2, 3] }`              |
 
 
-## Screenshots
+## 📸Screenshots
 <img width="2400" height="1260" alt="image" src="https://github.com/user-attachments/assets/017efb09-1547-4e46-a8f5-f0d08417e9ca" />
 <img width="1086" height="730" alt="image" src="https://github.com/user-attachments/assets/349b83af-4f52-495b-89da-82f9c9d0d39f" />
 <img width="985" height="844" alt="image" src="https://github.com/user-attachments/assets/bcf7e822-cd89-4ccd-9991-52567006d56f" />
