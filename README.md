@@ -1,4 +1,4 @@
-# Weather Solar Dashboard
+# Weather Forecast
 
 Monitoramento climático em tempo real focado em geração de energia fotovoltaica, com insights gerados por IA.
 
