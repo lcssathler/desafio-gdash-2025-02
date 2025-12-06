@@ -16,22 +16,23 @@ export default function CitySelection() {
   const navigate = useNavigate()
   const [cities, setCities] = useState<CityWeather[]>([])
   const [loading, setLoading] = useState(true)
-  const [cityToDelete, setCityToDelete] = useState<string | null>(null)
+  const [cityToDelete, setCityToDelete] = useState<{ _id: string; cityId: number } | null>(null)
 
-  const deleteCity = async (_id: string) => {
-    try {
-      await api.delete(`/weather/log/delete/${_id}`)
-      setCities(prev => prev.filter(c => c._id !== _id))
+ const deleteCity = async ({ _id, cityId }: { _id: string; cityId: number }) => {
+  try {
+    await api.delete(`/weather/log/delete/${_id}`)
+    setCities(prev => prev.filter(c => c._id !== _id))
 
-      const saved = JSON.parse(localStorage.getItem("selectedCities") || "[]")
-      const updated = saved.filter((id: string) => id !== _id)
-      localStorage.setItem("selectedCities", JSON.stringify(updated))
+    const saved = JSON.parse(localStorage.getItem("selectedCities") || "[]")
+    const updated = saved.filter((id: number) => id !== cityId)
+    localStorage.setItem("selectedCities", JSON.stringify(updated))
 
-      toast.success("City deleted successfully")
-    } catch {
-      toast.error("Error deleting city")
-    }
+    toast.success("City deleted successfully")
+  } catch {
+    toast.error("Error deleting city")
   }
+}
+
 
 
   useEffect(() => {
@@ -137,7 +138,7 @@ export default function CitySelection() {
                         className="w-full"
                         onClick={(e) => {
                           e.stopPropagation()
-                          setCityToDelete(city._id!)
+                          setCityToDelete({ _id: city._id!, cityId: city.cityId })
                         }}
                       >
                         Delete city
