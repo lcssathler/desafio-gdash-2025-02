@@ -11,6 +11,7 @@ import CityChart from '@/components/CityChart'
 import ExportCsvButton from '@/components/ExportCsvButton'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import ExportXlsxButton from '@/components/ExportXlsxButton'
 
 export default function CitySelection() {
   const navigate = useNavigate()
@@ -29,7 +30,7 @@ export default function CitySelection() {
 
     toast.success("City deleted successfully")
   } catch {
-    toast.error("Error deleting city")
+    toast.error("Error deleting city")  
   }
 }
 
@@ -174,8 +175,9 @@ export default function CitySelection() {
           <CityChart cities={cities} />
         </div>
 
-        <div className="flex justify-center mt-8">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
           <ExportCsvButton cities={cities} />
+          <ExportXlsxButton cities={cities} />
         </div>
       </main>
     </div>

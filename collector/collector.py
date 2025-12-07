@@ -141,8 +141,6 @@ try:
 
     else:
         print("Connecting to local RabbitMQ...")
-
-        # Local Docker
         credentials = pika.PlainCredentials("guest", "guest")
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(
