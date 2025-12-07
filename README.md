@@ -14,9 +14,9 @@ Monitoramento climático de todas as cidades do Brasil, com insights gerados por
 - Deploy Railway + Vercel
 
 # 🔗 Links
--Backend + Collector + RabbitMQ + Worker: [Railway dashboard](https://railway.com/invite/N75xMOgHkkw) ou [Railway project link](https://railway.com/project/0e21c556-75ef-4056-91bd-95baccc9060a?environmentId=5623a887-c069-4b0d-b269-6baa8b2d9404)  
-
--Frontend: [Domínio do deploy](https://weather-forecast-nu-pink.vercel.app/) 
+- Backend + Collector + RabbitMQ + Worker: [Railway dashboard](https://railway.com/invite/N75xMOgHkkw) ou [Railway project link](https://railway.com/project/0e21c556-75ef-4056-91bd-95baccc9060a?environmentId=5623a887-c069-4b0d-b269-6baa8b2d9404)  
+- Frontend: [Domínio do deploy](https://weather-forecast-nu-pink.vercel.app/) 
+- Youtube: https://youtu.be/LGjuyMOLD8E
 
 ## 🛠 Tecnologias
 **Frontend**
@@ -67,6 +67,16 @@ MONGODB_URI=mongodb://mongo:27017/weather
 GROQ_API_KEY=sua-chave-groq-aqui
 COLLECTOR_URL=http://collector:8000
 ```
+Collector (collector/.env)
+```
+RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+BACKEND_URL=http://backend:3000
+```
+Worker (worker/.env)
+```
+RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+BACKEND_URL=http://backend:3000
+```
 
 ## 💻 Coleta de Dados
 Um collector externo através de um trigger envia logs via POST a cada 5 minutos. Sendo o responsável por fazer as requisições para as APIs de clima e geografia, há duas threads em execução dentro do collector: 
@@ -74,7 +84,7 @@ Um collector externo através de um trigger envia logs via POST a cada 5 minutos
 2. Um loop que fica buscando logs atualizados das cidades já selecionadas.
 
 ## 👩‍💻 Worker
-O worker é responsável por se inscrever em um canal do RabbitMQ e escutar todas as mensagens que são enviadas para lá. Após receber os logs climáticos das cidades selecionadas, ele faz uma chamada direta ao backend para persistir os dados no MongoDB.
+O worker é responsável por se inscrever em uma fila do RabbitMQ e escutar todas as mensagens que são enviadas pelo collector. Após obter as mensagens armazenadas dentro da fila do RabbitMQ, ele faz uma chamada direta ao backend para persistir os dados no MongoDB.
 
 ## ⚙ Groq API
 Com os dados consolidados e salvos no banco de dados, o backend envia todas as informações geográficas e climáticas para um modelo de predição para analisar as as previsões futuras com as condições climáticas atuais e gerar um resumo sobre todo o contexto metererológico.
