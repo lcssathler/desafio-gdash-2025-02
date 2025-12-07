@@ -16,7 +16,7 @@ Monitoramento climático de todas as cidades do Brasil, com insights gerados por
 # 🔗 Links
 - Backend + Collector + RabbitMQ + Worker: [Railway dashboard](https://railway.com/invite/N75xMOgHkkw) ou [Railway project link](https://railway.com/project/0e21c556-75ef-4056-91bd-95baccc9060a?environmentId=5623a887-c069-4b0d-b269-6baa8b2d9404)  
 - Frontend: [Domínio do deploy](https://weather-forecast-nu-pink.vercel.app/) 
-- Youtube: https://youtu.be/LGjuyMOLD8E
+- Youtube: https://youtu.be/BIiGdcNFQMk
 
 ## 🛠 Tecnologias
 **Frontend**
