@@ -57,15 +57,26 @@ docker compose up --build
 ```
 
 ## 🔒 Variáveis de Ambiente
+Raiz (/.env)
+```
+GROQ_API_KEY=sua_api_aqui
+JWT_SECRET=supersecretkey_123456789
+BACKEND_URL=http://backend:3000
+RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+```
 Frontend (frontend/.env)
 ```
 VITE_API_URL=http://localhost:3000
 ```
 Backend (backend/.env)
 ```
-MONGODB_URI=mongodb://mongo:27017/weather
-GROQ_API_KEY=sua-chave-groq-aqui
+PORT=3000
+MONGO_URL=mongodb://mongo:27017/weather
+GROQ_API_KEY=sua_chave_api_aqui
+GROQ_MODEL=llama-3.3-70b-versatile
 COLLECTOR_URL=http://collector:8000
+JWT_SECRET=supersecretkey_123456789
+JWT_EXPIRES_IN=7d
 ```
 Collector (collector/.env)
 ```
